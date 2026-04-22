@@ -1,0 +1,128 @@
+// ----- Configuration -----
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ----- Models -----
+model Profile {
+  // Fields
+  id                   String    @id @default(uuid()) @db.Uuid
+  userId               String    @unique @map("user_id") @db.Uuid
+  email                String    @unique
+  fullName             String    @map("full_name")
+  targetPosition       String?   @map("target_position")
+  targetEmploymentDate DateTime? @map("target_employment_date")
+  targetSalary         Int?      @map("target_salary")
+  emailConfirmed       Boolean   @default(false) @map("email_confirmed")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  resumes      Resume[]
+  applications Application[]
+
+  @@map("profiles")
+}
+
+model Resume {
+  // Fields
+  id         String   @id @default(uuid()) @db.Uuid
+  profileId  String   @map("profile_id") @db.Uuid
+  fileName   String   @map("file_name")
+  fileKey    String   @map("file_key")
+  parsedText String   @map("parsed_text")
+  uploadedAt DateTime @default(now()) @map("uploaded_at")
+
+  // Relations
+  profile  Profile    @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  analyses Analysis[]
+
+  // Indexes
+  @@index([profileId])
+  @@map("resumes")
+}
+
+model Application {
+  // Fields
+  id              String          @id @default(uuid()) @db.Uuid
+  profileId       String          @map("profile_id") @db.Uuid
+  jobPosition     String          @map("job_position")
+  company         String
+  location        String?
+  employmentType  EmploymentType  @default(NotSpecified) @map("employment_type")
+  workArrangement WorkArrangement @default(NotSpecified) @map("work_arrangement")
+  jobDescription  String?         @map("job_description")
+  jobUrl          String?         @map("job_url")
+  applicationDate DateTime?       @map("application_date")
+  deadlineDate    DateTime?       @map("deadline_date")
+  status          Status          @default(Bookmarked)
+  excitementLevel Int             @default(0) @map("excitement_level")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+
+  // Relations
+  profile  Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  analysis Analysis?
+
+  // Indexes
+  @@index([profileId])
+  @@map("applications")
+}
+
+model Analysis {
+  // Fields
+  id             String   @id @default(uuid()) @db.Uuid
+  applicationId  String   @unique @map("application_id") @db.Uuid
+  resumeId       String?  @map("resume_id") @db.Uuid
+  matchScore     Int      @map("match_score")
+  matchSummary   String   @map("match_summary")
+  matchingSkills String[] @map("matching_skills")
+  missingSkills  String[] @map("missing_skills")
+  recommendation String
+  modelVersion   String   @map("model_version")
+  analyzedAt     DateTime @default(now()) @map("analyzed_at")
+
+  // Relations
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  resume      Resume?     @relation(fields: [resumeId], references: [id], onDelete: SetNull)
+
+  // Indexes
+  @@index([applicationId])
+  @@index([resumeId])
+  @@map("analyses")
+}
+
+// ----- Enums -----
+enum Status {
+  Bookmarked
+  Applied
+  Interviewing
+  Offered
+  Rejected
+  Accepted
+  Withdrawn
+  NoResponse
+}
+
+enum EmploymentType {
+  FullTime
+  PartTime
+  Contract
+  Internship
+  Freelance
+  Temporary
+  NotSpecified
+}
+
+enum WorkArrangement {
+  Remote
+  Hybrid
+  Onsite
+  NotSpecified
+}
