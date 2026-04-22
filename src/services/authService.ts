@@ -162,7 +162,7 @@ export async function logoutUser(): Promise<void> {
  * Sends a password reset email to the user.
  *
  * @param input - { email }
- * @throws ConflictError if email not found, unconfirmed, or too many requests
+ * @throws ConflictError if too many requests
  * @throws InternalServerError if reset email fails
  *
  * @returns void (Email is sent via Supabase)
@@ -179,15 +179,8 @@ export async function forgotPassword(input: ForgotPasswordInput): Promise<void> 
   });
 
   // If profile doesn't exist, silently return
-  if (!existingProfile) {
+  if (!existingProfile || !existingProfile.emailConfirmed) {
     return;
-  }
-
-  // Block password reset for unconfirmed emails
-  if (!existingProfile.emailConfirmed) {
-    throw new ConflictError(
-      "Please verify your email address before resetting your password. Check your inbox for the confirmation link.",
-    );
   }
 
   // Request password reset from Supabase

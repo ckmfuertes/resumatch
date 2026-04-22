@@ -14,7 +14,6 @@ import {
   resetPasswordSchema,
 } from "@/validations/authValidation";
 import { HttpError, ActionResponse } from "@/utils/error";
-import { parseFormData } from "@/utils/form";
 import type { AuthUser } from "@/types/authType";
 
 /**
@@ -25,7 +24,7 @@ import type { AuthUser } from "@/types/authType";
 export async function loginUserAction(formData: FormData): Promise<ActionResponse<AuthUser>> {
   try {
     // Parse raw form data
-    const rawData = parseFormData(formData);
+    const rawData = Object.fromEntries(formData);
 
     // Validate with Zod
     const validatedData = loginSchema.parse(rawData);
@@ -52,7 +51,7 @@ export async function loginUserAction(formData: FormData): Promise<ActionRespons
 export async function signUpUserAction(formData: FormData): Promise<ActionResponse<AuthUser>> {
   try {
     // Parse raw form data
-    const rawData = parseFormData(formData);
+    const rawData = Object.fromEntries(formData);
 
     // Validate with Zod
     const validatedData = signUpSchema.parse(rawData);
@@ -96,7 +95,7 @@ export async function logoutAction(): Promise<ActionResponse<void>> {
 export async function forgotPasswordAction(formData: FormData): Promise<ActionResponse<void>> {
   try {
     // Parse raw form data
-    const rawData = parseFormData(formData);
+    const rawData = Object.fromEntries(formData);
 
     // Validate with Zod
     const validatedData = forgotPasswordSchema.parse(rawData);
@@ -123,7 +122,7 @@ export async function forgotPasswordAction(formData: FormData): Promise<ActionRe
 export async function resetPasswordAction(formData: FormData): Promise<ActionResponse<void>> {
   try {
     // Parse raw form data
-    const rawData = parseFormData(formData);
+    const rawData = Object.fromEntries(formData);
 
     // Validate with Zod
     const validatedData = resetPasswordSchema.parse(rawData);
