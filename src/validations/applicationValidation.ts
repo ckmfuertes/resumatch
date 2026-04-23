@@ -48,7 +48,7 @@ export const addApplicationSchema = z.object({
 
   excitementLevel: z.preprocess(
     (val) => (val ? Number(val) : 0),
-    z.number().int().min(0).max(10).default(0),
+    z.number().int().min(0).max(5).default(0),
   ),
 });
 
