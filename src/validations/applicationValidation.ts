@@ -31,10 +31,10 @@ export const addApplicationSchema = z.object({
   workArrangement: z.enum(WorkArrangement).default(WorkArrangement.NotSpecified),
 
   jobUrl: z
-    .string()
-    .trim()
-    .url("Please enter a valid URL")
-    .max(500, "URL is too long")
+    .preprocess(
+      (val) => (val === "" || val === undefined || val === null ? null : val),
+      z.string().trim().url("Please enter a valid URL").nullable(),
+    )
     .transform((val) => val || null)
     .optional(),
 
