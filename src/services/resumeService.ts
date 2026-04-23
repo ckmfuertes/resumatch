@@ -114,8 +114,8 @@ export async function getResumes() {
  * @param resumeId - The ID of the resume to retrieve
  * @returns The resume record with a signed URL for viewing
  * @throws UnauthorizedError if user is not authenticated
- * @throws NotFoundError if profile doesn't exist or resume not found
- * @throws UnauthorizedError if resume doesn't belong to the user
+ * @throws NotFoundError if profile doesn't exist or resume not found or doesn't belong to the user
+ * @throws InternalServerError If signed URL generation fails
  */
 export async function getResumeById(resumeId: string) {
   // Get the authenticated user's profile
@@ -138,9 +138,13 @@ export async function getResumeById(resumeId: string) {
   let signedUrl = null;
 
   if (resume.fileKey && resume.fileKey !== "") {
-    const { data: signedUrlData } = await supabase.storage
+    const { data: signedUrlData, error: signedUrlError } = await supabase.storage
       .from("resumes")
       .createSignedUrl(resume.fileKey, 3600);
+
+    if (signedUrlError) {
+      throw new InternalServerError("Failed to generate resume signed URL");
+    }
 
     signedUrl = signedUrlData?.signedUrl ?? null;
   }
@@ -157,8 +161,8 @@ export async function getResumeById(resumeId: string) {
  *
  * @param resumeId - The ID of the resume to delete
  * @returns The deleted resume record
- * @throws UnauthorizedError if user is not authenticated
- * @throws NotFoundError if resume doesn't exist or doesn't belong to user
+ * @throws UnauthorizedError if user is not authenticated or doesn't own the resume
+ * @throws NotFoundError if resume doesn't exist or doesn't belong to the user
  * @throws InternalServerError If storage deletion fails
  */
 export async function deleteResume(resumeId: string) {
@@ -230,7 +234,7 @@ async function parseResume(resumeFile: File): Promise<string> {
  * @param resumeFile - The resume file to upload
  * @param userId - The user ID (used for folder organization)
  * @returns The storage key of the uploaded file
- * @throws BadRequestError If upload fails due to client error
+ * @throws InternalServerError If upload fails
  */
 async function uploadResume(resumeFile: File, userId: string): Promise<{ fileKey: string }> {
   // Create Supabase server client
