@@ -76,6 +76,12 @@ export class ConflictError extends HttpError {
   }
 }
 
+export class RateLimitError extends HttpError {
+  constructor(message = "Rate limit exceeded", code?: string) {
+    super(429, message, code);
+  }
+}
+
 /* ---------- 5xx Server Errors ---------- */
 export class InternalServerError extends HttpError {
   constructor(message = "Internal server error", code?: string) {

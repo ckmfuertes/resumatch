@@ -22,7 +22,7 @@ export const addApplicationSchema = z.object({
   jobDescription: z
     .string()
     .trim()
-    .max(5000, "Job description is too long")
+    .max(10000, "Job description is too long")
     .transform((val) => val || null)
     .optional(),
 
