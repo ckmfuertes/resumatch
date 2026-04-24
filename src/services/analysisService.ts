@@ -3,6 +3,7 @@ import { getProfile } from "./profileService";
 import { callGeminiAnalysis } from "./geminiService";
 import { getRemainingAnalysisQuota, consumeAnalysisQuota } from "@/lib/upstash/rate-limit";
 import { NotFoundError, RateLimitError } from "@/utils/error";
+import { geminiAnalysisInputSchema } from "@/validations/analysisValidation";
 import type { Analysis } from "@prisma/client";
 import type { GenerateAnalysisInput, GenerateAnalysisResult } from "@/types/analysisType";
 
@@ -81,6 +82,12 @@ export async function generateAnalysis(
       usedQuota: false,
     };
   }
+
+  // Validate input sizes before calling Gemini
+  geminiAnalysisInputSchema.parse({
+    analyzedResumeText: resume.parsedText,
+    analyzedJobDescription: existingApplication.jobDescription || "",
+  });
 
   // Check remaining quota
   const remainingQuota = await getRemainingAnalysisQuota(profile.userId);

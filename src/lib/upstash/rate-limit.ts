@@ -4,11 +4,10 @@ import { Redis } from "@upstash/redis";
 // Initialize a single Redis client and Ratelimit instance for the entire module
 const redis = Redis.fromEnv();
 
-const getLimiter = () =>
-  new Ratelimit({
-    redis,
-    limiter: Ratelimit.fixedWindow(20, "31 d"),
-  });
+const limiter = new Ratelimit({
+  redis,
+  limiter: Ratelimit.fixedWindow(20, "31 d"),
+});
 
 /**
  * Consumes one quota AFTER successful analysis.
@@ -19,7 +18,7 @@ export async function consumeAnalysisQuota(userId: string) {
   const yearMonth = new Date().toISOString().slice(0, 7);
   const identifier = `analysis:${userId}:${yearMonth}`;
 
-  const { success, remaining } = await getLimiter().limit(identifier);
+  const { success, remaining } = await limiter.limit(identifier);
   return { success, remaining };
 }
 
@@ -31,6 +30,6 @@ export async function getRemainingAnalysisQuota(userId: string) {
   const yearMonth = new Date().toISOString().slice(0, 7);
   const identifier = `analysis:${userId}:${yearMonth}`;
 
-  const { remaining } = await getLimiter().getRemaining(identifier);
+  const { remaining } = await limiter.getRemaining(identifier);
   return remaining;
 }
