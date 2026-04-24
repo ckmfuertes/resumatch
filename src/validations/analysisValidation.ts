@@ -2,9 +2,10 @@ import { z } from "zod";
 
 export const generateAnalysisInputSchema = z.object({
   applicationId: z.string().uuid("Invalid application ID format"),
-
   resumeId: z.string().uuid("Invalid resume ID format"),
+});
 
+export const geminiAnalysisInputSchema = z.object({
   analyzedResumeText: z
     .string()
     .min(1, "Resume text cannot be empty")

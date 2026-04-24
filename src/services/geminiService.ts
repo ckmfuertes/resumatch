@@ -2,7 +2,7 @@ import { geminiAi } from "@/lib/gemini/client";
 import { buildAnalysisPrompt } from "@/lib/gemini/prompts";
 import { InternalServerError } from "@/utils/error";
 import { geminiAnalysisSchema } from "@/validations/analysisValidation";
-import type { GenerateAnalysisInput, GeminiAnalysisResult } from "@/types/analysisType";
+import type { GeminiAnalysisInput, GeminiAnalysisResult } from "@/types/analysisType";
 
 /**
  * Calls the Gemini API to analyze the resume against the job description.
@@ -11,7 +11,7 @@ import type { GenerateAnalysisInput, GeminiAnalysisResult } from "@/types/analys
  * @throws InternalServerError if the response from Gemini is invalid or cannot be parsed.
  */
 export async function callGeminiAnalysis(
-  input: GenerateAnalysisInput,
+  input: GeminiAnalysisInput
 ): Promise<GeminiAnalysisResult> {
   // Build the prompt
   const prompt = buildAnalysisPrompt(input.analyzedResumeText, input.analyzedJobDescription);

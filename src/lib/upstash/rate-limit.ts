@@ -1,24 +1,36 @@
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 
+// Initialize a single Redis client and Ratelimit instance for the entire module
 const redis = Redis.fromEnv();
 
+const getLimiter = () =>
+  new Ratelimit({
+    redis,
+    limiter: Ratelimit.fixedWindow(25, "31 d"),
+  });
+
 /**
- * Checks if the user has exceeded their monthly analysis limit.
+ * Checks and increments the user's monthly analysis limit.
  * Each user is allowed 25 analyses per month.
- * @param userId - The ID of the user to check
- * @returns An object containing whether the limit has been exceeded and how many analyses are remaining
+ * @returns An object containing whether the limit has been exceeded and remaining count
  */
 export async function checkAnalysisLimit(userId: string) {
   const yearMonth = new Date().toISOString().slice(0, 7);
   const identifier = `analysis:${userId}:${yearMonth}`;
 
-  const limiter = new Ratelimit({
-    redis,
-    limiter: Ratelimit.fixedWindow(25, "31 d"),
-  });
-
-  const { success, remaining } = await limiter.limit(identifier);
-
+  const { success, remaining } = await getLimiter().limit(identifier);
   return { success, remaining };
+}
+
+/**
+ * Peeks at remaining quota without consuming a request.
+ * @returns remaining analyses left this month
+ */
+export async function getRemainingAnalysisQuota(userId: string) {
+  const yearMonth = new Date().toISOString().slice(0, 7);
+  const identifier = `analysis:${userId}:${yearMonth}`;
+
+  const { remaining } = await getLimiter().getRemaining(identifier);
+  return remaining;
 }
