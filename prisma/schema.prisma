@@ -77,16 +77,18 @@ model Application {
 
 model Analysis {
   // Fields
-  id             String   @id @default(uuid()) @db.Uuid
-  applicationId  String   @unique @map("application_id") @db.Uuid
-  resumeId       String?  @map("resume_id") @db.Uuid
-  matchScore     Int      @map("match_score")
-  matchSummary   String   @map("match_summary")
-  matchingSkills String[] @map("matching_skills")
-  missingSkills  String[] @map("missing_skills")
-  recommendation String
-  modelVersion   String   @map("model_version")
-  analyzedAt     DateTime @default(now()) @map("analyzed_at")
+  id                     String   @id @default(uuid()) @db.Uuid
+  applicationId          String   @unique @map("application_id") @db.Uuid
+  resumeId               String?  @map("resume_id") @db.Uuid
+  analyzedResumeText     String   @map("analyzed_resume_text")
+  analyzedJobDescription String   @map("analyzed_job_description")
+  matchScore             Int      @map("match_score")
+  matchSummary           String   @map("match_summary")
+  matchingSkills         String[] @map("matching_skills")
+  missingSkills          String[] @map("missing_skills")
+  recommendation         String
+  modelVersion           String   @map("model_version")
+  analyzedAt             DateTime @default(now()) @map("analyzed_at")
 
   // Relations
   application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
