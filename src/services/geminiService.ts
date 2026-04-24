@@ -11,15 +11,22 @@ import type { GeminiAnalysisInput, GeminiAnalysisResult } from "@/types/analysis
  * @throws InternalServerError if the response from Gemini is invalid or cannot be parsed.
  */
 export async function callGeminiAnalysis(
-  input: GeminiAnalysisInput
+  input: GeminiAnalysisInput,
 ): Promise<GeminiAnalysisResult> {
   // Build the prompt
   const prompt = buildAnalysisPrompt(input.analyzedResumeText, input.analyzedJobDescription);
 
   // Call the Gemini API
   const response = await geminiAi.models.generateContent({
-    model: "gemini-2.5-flash",
-    contents: prompt,
+    model: "gemini-3.1-flash-lite-preview",
+    contents: {
+      role: "user",
+      parts: [
+        {
+          text: prompt,
+        },
+      ],
+    },
   });
 
   const text = response.text;

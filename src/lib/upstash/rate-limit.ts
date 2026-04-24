@@ -7,15 +7,15 @@ const redis = Redis.fromEnv();
 const getLimiter = () =>
   new Ratelimit({
     redis,
-    limiter: Ratelimit.fixedWindow(25, "31 d"),
+    limiter: Ratelimit.fixedWindow(20, "31 d"),
   });
 
 /**
- * Checks and increments the user's monthly analysis limit.
- * Each user is allowed 25 analyses per month.
+ * Consumes one quota AFTER successful analysis.
+ * Call this only after successful analysis returns a valid result.
  * @returns An object containing whether the limit has been exceeded and remaining count
  */
-export async function checkAnalysisLimit(userId: string) {
+export async function consumeAnalysisQuota(userId: string) {
   const yearMonth = new Date().toISOString().slice(0, 7);
   const identifier = `analysis:${userId}:${yearMonth}`;
 

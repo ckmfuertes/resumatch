@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getProfile } from "./profileService";
 import { callGeminiAnalysis } from "./geminiService";
-import { checkAnalysisLimit } from "@/lib/upstash/rate-limit";
+import { getRemainingAnalysisQuota, consumeAnalysisQuota } from "@/lib/upstash/rate-limit";
 import { NotFoundError, RateLimitError } from "@/utils/error";
 import type { Analysis } from "@prisma/client";
 import type { GenerateAnalysisInput, GenerateAnalysisResult } from "@/types/analysisType";
@@ -35,6 +35,7 @@ async function hasSameAnalysisContent(
  * @param input - Contains applicationId and resumeId
  * @returns The created or updated Analysis record
  * @throws NotFoundError if application or resume not found, or user doesn't own them
+ * @throws RateLimitError if user has exceeded their monthly quota
  */
 export async function generateAnalysis(
   input: GenerateAnalysisInput,
@@ -81,21 +82,24 @@ export async function generateAnalysis(
     };
   }
 
-  // Check analysis limit for the user (max 25 per month)
-  const { success } = await checkAnalysisLimit(profile.userId);
+  // Check remaining quota
+  const remainingQuota = await getRemainingAnalysisQuota(profile.userId);
 
-  if (!success) {
+  if (remainingQuota <= 0) {
     const currentMonth = new Date().toLocaleString("default", { month: "long" });
     throw new RateLimitError(
-      `You've reached your 25 analysis limit for ${currentMonth}. Limits reset on the 1st of next month.`,
+      `You've reached your 20 analysis limit for ${currentMonth}. Limits reset on the 1st of next month.`,
     );
   }
 
-  // Call Gemini AI for analysis
+  // Call Gemini AI for analysis (may fail - doesn't consume quota)
   const aiResult = await callGeminiAnalysis({
     analyzedResumeText: resume.parsedText,
     analyzedJobDescription: existingApplication.jobDescription || "",
   });
+
+  // After successful Gemini response, consume one quota
+  await consumeAnalysisQuota(profile.userId);
 
   // Build analysis data payload for both update and create
   const analysisData = {
@@ -107,7 +111,7 @@ export async function generateAnalysis(
     matchingSkills: aiResult.matchingSkills,
     missingSkills: aiResult.missingSkills,
     recommendation: aiResult.recommendation,
-    modelVersion: "Gemini 2.5 Flash",
+    modelVersion: "Gemini 3.1 Flash Lite",
   };
 
   // Upsert analysis (create or update)
