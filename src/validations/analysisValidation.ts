@@ -19,11 +19,11 @@ export const generateAnalysisInputSchema = z.object({
 export const geminiAnalysisSchema = z.object({
   matchScore: z.number().int().min(0).max(100),
 
-  matchSummary: z.string().max(500),
+  matchSummary: z.string().max(1000), // Leeway for AI hallucinations: 1000 chars
 
-  matchingSkills: z.array(z.string()).max(8),
+  matchingSkills: z.array(z.string()).max(12), // Leeway for AI hallucinations: 12 items
 
-  missingSkills: z.array(z.string()).max(8),
+  missingSkills: z.array(z.string()).max(12), // Leeway for AI hallucinations: 12 items
 
-  recommendation: z.string().max(500),
+  recommendation: z.string().max(1000), // Leeway for AI hallucinations: 1000 chars
 });
