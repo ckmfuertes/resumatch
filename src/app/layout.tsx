@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Noto_Serif_Georgian, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "@/components/ui/sonner";
 
 const fontSans = Geist({
   subsets: ["latin"],
@@ -32,6 +33,7 @@ export default function RootLayout({
         className={`${fontSans.variable} ${fontSerif.variable} ${fontMono.variable} antialiased`}
       >
         {children}
+        <Toaster />
       </body>
     </html>
   );
