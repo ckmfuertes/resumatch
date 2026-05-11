@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { Geist, Noto_Serif_Georgian, Geist_Mono } from "next/font/google";
+import { Inter, Noto_Serif_Georgian, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 
-const fontSans = Geist({
+const fontSans = Inter({
   subsets: ["latin"],
   variable: "--font-sans",
 });
@@ -20,6 +20,14 @@ const fontMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Resumatch",
+  icons: {
+    icon: [
+      {
+        url: "/resumatch-logo-ball.svg",
+        type: "image/svg+xml",
+      },
+    ],
+  },
 };
 
 export default function RootLayout({
